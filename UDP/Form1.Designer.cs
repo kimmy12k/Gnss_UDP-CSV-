@@ -43,31 +43,25 @@
             grControl = new DevExpress.XtraEditors.GroupControl();
             btnConfig = new DevExpress.XtraEditors.SimpleButton();
             btnRfOff = new DevExpress.XtraEditors.SimpleButton();
+            btnHilStart = new DevExpress.XtraEditors.SimpleButton();
             btnLoadCsv = new DevExpress.XtraEditors.SimpleButton();
             btnHilStop = new DevExpress.XtraEditors.SimpleButton();
-            btnHilStart = new DevExpress.XtraEditors.SimpleButton();
             btnRfOn = new DevExpress.XtraEditors.SimpleButton();
             btnGnssOff = new DevExpress.XtraEditors.SimpleButton();
+            btnClear = new DevExpress.XtraEditors.SimpleButton();
             grStatus = new DevExpress.XtraEditors.GroupControl();
             lblPdop = new DevExpress.XtraEditors.LabelControl();
             lblSimInfo = new DevExpress.XtraEditors.LabelControl();
             lblTestMode = new DevExpress.XtraEditors.LabelControl();
-            lblRfState = new DevExpress.XtraEditors.LabelControl();
             lblGnssState = new DevExpress.XtraEditors.LabelControl();
-            labelControl5 = new DevExpress.XtraEditors.LabelControl();
             labelControl4 = new DevExpress.XtraEditors.LabelControl();
             labelControl3 = new DevExpress.XtraEditors.LabelControl();
-            RFOut = new DevExpress.XtraEditors.LabelControl();
             labelControl1 = new DevExpress.XtraEditors.LabelControl();
             grHilMonitor = new DevExpress.XtraEditors.GroupControl();
             lblHilStatus = new DevExpress.XtraEditors.LabelControl();
-            lblLatency = new DevExpress.XtraEditors.LabelControl();
-            lblUpdateRate = new DevExpress.XtraEditors.LabelControl();
             lblPacketCount = new DevExpress.XtraEditors.LabelControl();
             lblUdpPort = new DevExpress.XtraEditors.LabelControl();
             labelControl9 = new DevExpress.XtraEditors.LabelControl();
-            labelControl8 = new DevExpress.XtraEditors.LabelControl();
-            labelControl7 = new DevExpress.XtraEditors.LabelControl();
             labelControl6 = new DevExpress.XtraEditors.LabelControl();
             labelControl2 = new DevExpress.XtraEditors.LabelControl();
             grGnssConfig = new DevExpress.XtraEditors.GroupControl();
@@ -82,10 +76,14 @@
             lblLon = new DevExpress.XtraEditors.LabelControl();
             lblLat = new DevExpress.XtraEditors.LabelControl();
             lblPosition = new DevExpress.XtraEditors.LabelControl();
-            kim = new DevExpress.XtraEditors.LabelControl();
+            lblTest = new DevExpress.XtraEditors.LabelControl();
             grLog = new DevExpress.XtraEditors.GroupControl();
             btnLogClear = new DevExpress.XtraEditors.SimpleButton();
             memoLog = new DevExpress.XtraEditors.MemoEdit();
+            grSetTime = new DevExpress.XtraEditors.GroupControl();
+            DateEdits = new DevExpress.XtraEditors.DateTimeOffsetEdit();
+            btnSetCurrentDate = new DevExpress.XtraEditors.SimpleButton();
+            btnSetDate = new DevExpress.XtraEditors.SimpleButton();
             ((System.ComponentModel.ISupportInitialize)grNetwork).BeginInit();
             grNetwork.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)picStatus.Properties).BeginInit();
@@ -109,6 +107,9 @@
             ((System.ComponentModel.ISupportInitialize)grLog).BeginInit();
             grLog.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)memoLog.Properties).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)grSetTime).BeginInit();
+            grSetTime.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)DateEdits.Properties).BeginInit();
             SuspendLayout();
             // 
             // grNetwork
@@ -122,53 +123,53 @@
             grNetwork.Controls.Add(lblSCPIPort);
             grNetwork.Controls.Add(txtIP);
             grNetwork.Controls.Add(lblIp);
-            grNetwork.Location = new System.Drawing.Point(12, 13);
+            grNetwork.Location = new System.Drawing.Point(5, 13);
             grNetwork.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             grNetwork.Name = "grNetwork";
-            grNetwork.Size = new System.Drawing.Size(630, 98);
+            grNetwork.Size = new System.Drawing.Size(346, 120);
             grNetwork.TabIndex = 0;
             grNetwork.Text = "NETWORK";
             // 
             // picStatus
             // 
-            picStatus.Location = new System.Drawing.Point(563, 35);
+            picStatus.Location = new System.Drawing.Point(276, 83);
             picStatus.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             picStatus.Name = "picStatus";
             picStatus.Properties.ShowCameraMenuItem = DevExpress.XtraEditors.Controls.CameraMenuItemVisibility.Auto;
-            picStatus.Size = new System.Drawing.Size(49, 37);
+            picStatus.Size = new System.Drawing.Size(48, 29);
             picStatus.TabIndex = 8;
             // 
             // btnDisconnect
             // 
-            btnDisconnect.Location = new System.Drawing.Point(473, 38);
+            btnDisconnect.Location = new System.Drawing.Point(206, 83);
             btnDisconnect.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             btnDisconnect.Name = "btnDisconnect";
-            btnDisconnect.Size = new System.Drawing.Size(74, 30);
+            btnDisconnect.Size = new System.Drawing.Size(50, 30);
             btnDisconnect.TabIndex = 7;
             btnDisconnect.Text = "해제";
             btnDisconnect.Click += btnDisconnect_Click;
             // 
             // btnConnect
             // 
-            btnConnect.Location = new System.Drawing.Point(388, 38);
+            btnConnect.Location = new System.Drawing.Point(151, 83);
             btnConnect.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             btnConnect.Name = "btnConnect";
-            btnConnect.Size = new System.Drawing.Size(79, 30);
+            btnConnect.Size = new System.Drawing.Size(51, 30);
             btnConnect.TabIndex = 6;
             btnConnect.Text = "연결";
             btnConnect.Click += btnConnect_Click;
             // 
             // txtUdpPort
             // 
-            txtUdpPort.Location = new System.Drawing.Point(274, 60);
+            txtUdpPort.Location = new System.Drawing.Point(14, 86);
             txtUdpPort.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             txtUdpPort.Name = "txtUdpPort";
-            txtUdpPort.Size = new System.Drawing.Size(91, 20);
+            txtUdpPort.Size = new System.Drawing.Size(114, 20);
             txtUdpPort.TabIndex = 5;
             // 
             // lblUDPPrt
             // 
-            lblUDPPrt.Location = new System.Drawing.Point(208, 63);
+            lblUDPPrt.Location = new System.Drawing.Point(26, 69);
             lblUDPPrt.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             lblUDPPrt.Name = "lblUDPPrt";
             lblUDPPrt.Size = new System.Drawing.Size(50, 14);
@@ -177,15 +178,15 @@
             // 
             // txtScpiPort
             // 
-            txtScpiPort.Location = new System.Drawing.Point(274, 32);
+            txtScpiPort.Location = new System.Drawing.Point(151, 43);
             txtScpiPort.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             txtScpiPort.Name = "txtScpiPort";
-            txtScpiPort.Size = new System.Drawing.Size(91, 20);
+            txtScpiPort.Size = new System.Drawing.Size(107, 20);
             txtScpiPort.TabIndex = 3;
             // 
             // lblSCPIPort
             // 
-            lblSCPIPort.Location = new System.Drawing.Point(206, 35);
+            lblSCPIPort.Location = new System.Drawing.Point(165, 27);
             lblSCPIPort.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             lblSCPIPort.Name = "lblSCPIPort";
             lblSCPIPort.Size = new System.Drawing.Size(52, 14);
@@ -194,7 +195,7 @@
             // 
             // txtIP
             // 
-            txtIP.Location = new System.Drawing.Point(68, 48);
+            txtIP.Location = new System.Drawing.Point(15, 43);
             txtIP.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             txtIP.Name = "txtIP";
             txtIP.Size = new System.Drawing.Size(114, 20);
@@ -202,31 +203,37 @@
             // 
             // lblIp
             // 
-            lblIp.Location = new System.Drawing.Point(27, 51);
+            lblIp.Location = new System.Drawing.Point(27, 27);
             lblIp.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             lblIp.Name = "lblIp";
-            lblIp.Size = new System.Drawing.Size(35, 14);
+            lblIp.Size = new System.Drawing.Size(51, 14);
             lblIp.TabIndex = 0;
-            lblIp.Text = "장비 IP";
+            lblIp.Text = "Device IP";
             // 
             // btnGnssOn
             // 
-            btnGnssOn.Location = new System.Drawing.Point(375, 26);
+            btnGnssOn.Appearance.Font = new System.Drawing.Font("Candara", 9F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, 0);
+            btnGnssOn.Appearance.Options.UseFont = true;
+            btnGnssOn.Location = new System.Drawing.Point(8, 69);
             btnGnssOn.Name = "btnGnssOn";
-            btnGnssOn.Size = new System.Drawing.Size(116, 40);
+            btnGnssOn.Size = new System.Drawing.Size(76, 32);
             btnGnssOn.TabIndex = 25;
             btnGnssOn.Text = "GNSS ON";
             btnGnssOn.Click += btnGnssOn_Click;
             // 
             // btnInitialize
             // 
-            btnInitialize.Appearance.BackColor = System.Drawing.Color.Blue;
+            btnInitialize.Appearance.BackColor = System.Drawing.Color.Yellow;
+            btnInitialize.Appearance.Font = new System.Drawing.Font("Candara", 9F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, 0);
+            btnInitialize.Appearance.ForeColor = System.Drawing.Color.Black;
             btnInitialize.Appearance.Options.UseBackColor = true;
+            btnInitialize.Appearance.Options.UseFont = true;
+            btnInitialize.Appearance.Options.UseForeColor = true;
             btnInitialize.AppearanceDisabled.Font = new System.Drawing.Font("Candara", 9F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, 0);
             btnInitialize.AppearanceDisabled.Options.UseFont = true;
-            btnInitialize.Location = new System.Drawing.Point(10, 27);
+            btnInitialize.Location = new System.Drawing.Point(9, 29);
             btnInitialize.Name = "btnInitialize";
-            btnInitialize.Size = new System.Drawing.Size(106, 40);
+            btnInitialize.Size = new System.Drawing.Size(76, 32);
             btnInitialize.TabIndex = 24;
             btnInitialize.Text = "Initialize";
             btnInitialize.Click += btnInitialize_Click;
@@ -235,64 +242,44 @@
             // 
             grControl.Controls.Add(btnConfig);
             grControl.Controls.Add(btnRfOff);
+            grControl.Controls.Add(btnHilStart);
             grControl.Controls.Add(btnLoadCsv);
             grControl.Controls.Add(btnHilStop);
-            grControl.Controls.Add(btnHilStart);
             grControl.Controls.Add(btnRfOn);
             grControl.Controls.Add(btnGnssOff);
             grControl.Controls.Add(btnInitialize);
             grControl.Controls.Add(btnGnssOn);
-            grControl.Location = new System.Drawing.Point(12, 238);
+            grControl.Location = new System.Drawing.Point(5, 354);
             grControl.Name = "grControl";
-            grControl.Size = new System.Drawing.Size(628, 120);
+            grControl.Size = new System.Drawing.Size(346, 120);
             grControl.TabIndex = 24;
             grControl.Text = "Control";
             // 
             // btnConfig
             // 
-            btnConfig.Appearance.BackColor = System.Drawing.Color.Aqua;
+            btnConfig.Appearance.BackColor = System.Drawing.Color.White;
             btnConfig.Appearance.BorderColor = System.Drawing.Color.FromArgb(128, 255, 255);
             btnConfig.Appearance.Font = new System.Drawing.Font("Candara", 9F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, 0);
             btnConfig.Appearance.Options.UseBackColor = true;
             btnConfig.Appearance.Options.UseBorderColor = true;
             btnConfig.Appearance.Options.UseFont = true;
-            btnConfig.Location = new System.Drawing.Point(8, 71);
+            btnConfig.Location = new System.Drawing.Point(90, 29);
             btnConfig.Name = "btnConfig";
-            btnConfig.Size = new System.Drawing.Size(108, 40);
+            btnConfig.Size = new System.Drawing.Size(76, 32);
             btnConfig.TabIndex = 34;
             btnConfig.Text = "Config";
             btnConfig.Click += btnConfig_Click;
             // 
             // btnRfOff
             // 
-            btnRfOff.Location = new System.Drawing.Point(507, 71);
+            btnRfOff.Appearance.Font = new System.Drawing.Font("Candara", 9F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, 0);
+            btnRfOff.Appearance.Options.UseFont = true;
+            btnRfOff.Location = new System.Drawing.Point(258, 69);
             btnRfOff.Name = "btnRfOff";
-            btnRfOff.Size = new System.Drawing.Size(116, 40);
+            btnRfOff.Size = new System.Drawing.Size(76, 32);
             btnRfOff.TabIndex = 33;
             btnRfOff.Text = "RF OFF";
             btnRfOff.Click += btnRfOff_Click;
-            // 
-            // btnLoadCsv
-            // 
-            btnLoadCsv.Appearance.BackColor = System.Drawing.Color.FromArgb(128, 255, 128);
-            btnLoadCsv.Appearance.Font = new System.Drawing.Font("Candara", 9F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, 0);
-            btnLoadCsv.Appearance.Options.UseBackColor = true;
-            btnLoadCsv.Appearance.Options.UseFont = true;
-            btnLoadCsv.Location = new System.Drawing.Point(283, 31);
-            btnLoadCsv.Name = "btnLoadCsv";
-            btnLoadCsv.Size = new System.Drawing.Size(74, 80);
-            btnLoadCsv.TabIndex = 32;
-            btnLoadCsv.Text = "CSV Load";
-            btnLoadCsv.Click += btnLoadCsv_Click;
-            // 
-            // btnHilStop
-            // 
-            btnHilStop.Location = new System.Drawing.Point(153, 71);
-            btnHilStop.Name = "btnHilStop";
-            btnHilStop.Size = new System.Drawing.Size(116, 40);
-            btnHilStop.TabIndex = 31;
-            btnHilStop.Text = "HIL Stop";
-            btnHilStop.Click += btnHilStop_Click;
             // 
             // btnHilStart
             // 
@@ -302,60 +289,93 @@
             btnHilStart.Appearance.Options.UseBackColor = true;
             btnHilStart.Appearance.Options.UseBorderColor = true;
             btnHilStart.Appearance.Options.UseFont = true;
-            btnHilStart.Location = new System.Drawing.Point(153, 27);
+            btnHilStart.Location = new System.Drawing.Point(177, 29);
             btnHilStart.Name = "btnHilStart";
-            btnHilStart.Size = new System.Drawing.Size(116, 40);
+            btnHilStart.Size = new System.Drawing.Size(76, 32);
             btnHilStart.TabIndex = 30;
             btnHilStart.Text = "HIL Start";
             btnHilStart.Click += btnHilStart_Click;
             // 
+            // btnLoadCsv
+            // 
+            btnLoadCsv.Appearance.BackColor = System.Drawing.Color.FromArgb(128, 255, 128);
+            btnLoadCsv.Appearance.Font = new System.Drawing.Font("Candara", 9F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, 0);
+            btnLoadCsv.Appearance.Options.UseBackColor = true;
+            btnLoadCsv.Appearance.Options.UseFont = true;
+            btnLoadCsv.Location = new System.Drawing.Point(268, 1);
+            btnLoadCsv.Name = "btnLoadCsv";
+            btnLoadCsv.Size = new System.Drawing.Size(65, 23);
+            btnLoadCsv.TabIndex = 32;
+            btnLoadCsv.Text = "CSV Load";
+            btnLoadCsv.Click += btnLoadCsv_Click;
+            // 
+            // btnHilStop
+            // 
+            btnHilStop.Appearance.Font = new System.Drawing.Font("Candara", 9F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, 0);
+            btnHilStop.Appearance.Options.UseFont = true;
+            btnHilStop.Location = new System.Drawing.Point(259, 29);
+            btnHilStop.Name = "btnHilStop";
+            btnHilStop.Size = new System.Drawing.Size(76, 32);
+            btnHilStop.TabIndex = 31;
+            btnHilStop.Text = "HIL Stop";
+            btnHilStop.Click += btnHilStop_Click;
+            // 
             // btnRfOn
             // 
-            btnRfOn.Location = new System.Drawing.Point(507, 26);
+            btnRfOn.Appearance.Font = new System.Drawing.Font("Candara", 9F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, 0);
+            btnRfOn.Appearance.Options.UseFont = true;
+            btnRfOn.Location = new System.Drawing.Point(176, 69);
             btnRfOn.Name = "btnRfOn";
-            btnRfOn.Size = new System.Drawing.Size(116, 40);
+            btnRfOn.Size = new System.Drawing.Size(76, 32);
             btnRfOn.TabIndex = 29;
             btnRfOn.Text = "RF ON";
             btnRfOn.Click += btnRfOn_Click;
             // 
             // btnGnssOff
             // 
-            btnGnssOff.Location = new System.Drawing.Point(375, 71);
+            btnGnssOff.Appearance.Font = new System.Drawing.Font("Candara", 9F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, 0);
+            btnGnssOff.Appearance.Options.UseFont = true;
+            btnGnssOff.Location = new System.Drawing.Point(91, 69);
             btnGnssOff.Name = "btnGnssOff";
-            btnGnssOff.Size = new System.Drawing.Size(116, 40);
+            btnGnssOff.Size = new System.Drawing.Size(76, 32);
             btnGnssOff.TabIndex = 26;
             btnGnssOff.Text = "GNSS OFF";
             btnGnssOff.Click += btnGnssOff_Click;
+            // 
+            // btnClear
+            // 
+            btnClear.Location = new System.Drawing.Point(177, 1);
+            btnClear.Name = "btnClear";
+            btnClear.Size = new System.Drawing.Size(75, 23);
+            btnClear.TabIndex = 35;
+            btnClear.Text = "Clear";
+            btnClear.Click += btnClear_Click;
             // 
             // grStatus
             // 
             grStatus.Controls.Add(lblPdop);
             grStatus.Controls.Add(lblSimInfo);
             grStatus.Controls.Add(lblTestMode);
-            grStatus.Controls.Add(lblRfState);
             grStatus.Controls.Add(lblGnssState);
-            grStatus.Controls.Add(labelControl5);
             grStatus.Controls.Add(labelControl4);
             grStatus.Controls.Add(labelControl3);
-            grStatus.Controls.Add(RFOut);
             grStatus.Controls.Add(labelControl1);
-            grStatus.Location = new System.Drawing.Point(12, 366);
+            grStatus.Location = new System.Drawing.Point(5, 480);
             grStatus.Name = "grStatus";
-            grStatus.Size = new System.Drawing.Size(312, 187);
+            grStatus.Size = new System.Drawing.Size(166, 117);
             grStatus.TabIndex = 34;
             grStatus.Text = "Status";
             // 
             // lblPdop
             // 
-            lblPdop.Location = new System.Drawing.Point(100, 149);
+            lblPdop.Location = new System.Drawing.Point(0, 0);
             lblPdop.Name = "lblPdop";
-            lblPdop.Size = new System.Drawing.Size(4, 14);
-            lblPdop.TabIndex = 45;
-            lblPdop.Text = "-";
+            lblPdop.Size = new System.Drawing.Size(0, 14);
+            lblPdop.TabIndex = 0;
             // 
             // lblSimInfo
             // 
-            lblSimInfo.Location = new System.Drawing.Point(102, 123);
+            lblSimInfo.Location = new System.Drawing.Point(103, 91);
             lblSimInfo.Name = "lblSimInfo";
             lblSimInfo.Size = new System.Drawing.Size(4, 14);
             lblSimInfo.TabIndex = 44;
@@ -363,40 +383,24 @@
             // 
             // lblTestMode
             // 
-            lblTestMode.Location = new System.Drawing.Point(103, 95);
+            lblTestMode.Location = new System.Drawing.Point(101, 67);
             lblTestMode.Name = "lblTestMode";
             lblTestMode.Size = new System.Drawing.Size(4, 14);
             lblTestMode.TabIndex = 43;
             lblTestMode.Text = "-";
             // 
-            // lblRfState
-            // 
-            lblRfState.Location = new System.Drawing.Point(103, 68);
-            lblRfState.Name = "lblRfState";
-            lblRfState.Size = new System.Drawing.Size(4, 14);
-            lblRfState.TabIndex = 42;
-            lblRfState.Text = "-";
-            // 
             // lblGnssState
             // 
-            lblGnssState.Location = new System.Drawing.Point(103, 39);
+            lblGnssState.Location = new System.Drawing.Point(102, 35);
             lblGnssState.Name = "lblGnssState";
             lblGnssState.Size = new System.Drawing.Size(4, 14);
             lblGnssState.TabIndex = 41;
             lblGnssState.Text = "-";
             // 
-            // labelControl5
-            // 
-            labelControl5.Location = new System.Drawing.Point(8, 149);
-            labelControl5.Name = "labelControl5";
-            labelControl5.Size = new System.Drawing.Size(31, 14);
-            labelControl5.TabIndex = 40;
-            labelControl5.Text = "PDOP";
-            // 
             // labelControl4
             // 
             labelControl4.ImeMode = System.Windows.Forms.ImeMode.On;
-            labelControl4.Location = new System.Drawing.Point(6, 123);
+            labelControl4.Location = new System.Drawing.Point(5, 90);
             labelControl4.Name = "labelControl4";
             labelControl4.Size = new System.Drawing.Size(45, 14);
             labelControl4.TabIndex = 39;
@@ -404,23 +408,15 @@
             // 
             // labelControl3
             // 
-            labelControl3.Location = new System.Drawing.Point(7, 95);
+            labelControl3.Location = new System.Drawing.Point(5, 62);
             labelControl3.Name = "labelControl3";
             labelControl3.Size = new System.Drawing.Size(59, 14);
             labelControl3.TabIndex = 38;
             labelControl3.Text = "Test Mode";
             // 
-            // RFOut
-            // 
-            RFOut.Location = new System.Drawing.Point(7, 68);
-            RFOut.Name = "RFOut";
-            RFOut.Size = new System.Drawing.Size(57, 14);
-            RFOut.TabIndex = 37;
-            RFOut.Text = "RF Output";
-            // 
             // labelControl1
             // 
-            labelControl1.Location = new System.Drawing.Point(8, 39);
+            labelControl1.Location = new System.Drawing.Point(5, 32);
             labelControl1.Name = "labelControl1";
             labelControl1.Size = new System.Drawing.Size(59, 14);
             labelControl1.TabIndex = 36;
@@ -429,48 +425,28 @@
             // grHilMonitor
             // 
             grHilMonitor.Controls.Add(lblHilStatus);
-            grHilMonitor.Controls.Add(lblLatency);
-            grHilMonitor.Controls.Add(lblUpdateRate);
             grHilMonitor.Controls.Add(lblPacketCount);
             grHilMonitor.Controls.Add(lblUdpPort);
             grHilMonitor.Controls.Add(labelControl9);
-            grHilMonitor.Controls.Add(labelControl8);
-            grHilMonitor.Controls.Add(labelControl7);
             grHilMonitor.Controls.Add(labelControl6);
             grHilMonitor.Controls.Add(labelControl2);
-            grHilMonitor.Location = new System.Drawing.Point(330, 366);
+            grHilMonitor.Location = new System.Drawing.Point(185, 481);
             grHilMonitor.Name = "grHilMonitor";
-            grHilMonitor.Size = new System.Drawing.Size(312, 187);
+            grHilMonitor.Size = new System.Drawing.Size(166, 116);
             grHilMonitor.TabIndex = 35;
             grHilMonitor.Text = "HIL Monitor";
             // 
             // lblHilStatus
             // 
-            lblHilStatus.Location = new System.Drawing.Point(121, 149);
+            lblHilStatus.Location = new System.Drawing.Point(93, 91);
             lblHilStatus.Name = "lblHilStatus";
             lblHilStatus.Size = new System.Drawing.Size(4, 14);
             lblHilStatus.TabIndex = 55;
             lblHilStatus.Text = "-";
             // 
-            // lblLatency
-            // 
-            lblLatency.Location = new System.Drawing.Point(121, 123);
-            lblLatency.Name = "lblLatency";
-            lblLatency.Size = new System.Drawing.Size(4, 14);
-            lblLatency.TabIndex = 54;
-            lblLatency.Text = "-";
-            // 
-            // lblUpdateRate
-            // 
-            lblUpdateRate.Location = new System.Drawing.Point(121, 95);
-            lblUpdateRate.Name = "lblUpdateRate";
-            lblUpdateRate.Size = new System.Drawing.Size(4, 14);
-            lblUpdateRate.TabIndex = 53;
-            lblUpdateRate.Text = "-";
-            // 
             // lblPacketCount
             // 
-            lblPacketCount.Location = new System.Drawing.Point(121, 68);
+            lblPacketCount.Location = new System.Drawing.Point(91, 65);
             lblPacketCount.Name = "lblPacketCount";
             lblPacketCount.Size = new System.Drawing.Size(4, 14);
             lblPacketCount.TabIndex = 52;
@@ -478,7 +454,7 @@
             // 
             // lblUdpPort
             // 
-            lblUdpPort.Location = new System.Drawing.Point(121, 39);
+            lblUdpPort.Location = new System.Drawing.Point(93, 35);
             lblUdpPort.Name = "lblUdpPort";
             lblUdpPort.Size = new System.Drawing.Size(4, 14);
             lblUdpPort.TabIndex = 51;
@@ -486,31 +462,15 @@
             // 
             // labelControl9
             // 
-            labelControl9.Location = new System.Drawing.Point(14, 149);
+            labelControl9.Location = new System.Drawing.Point(14, 91);
             labelControl9.Name = "labelControl9";
             labelControl9.Size = new System.Drawing.Size(35, 14);
             labelControl9.TabIndex = 50;
             labelControl9.Text = "Status";
             // 
-            // labelControl8
-            // 
-            labelControl8.Location = new System.Drawing.Point(14, 123);
-            labelControl8.Name = "labelControl8";
-            labelControl8.Size = new System.Drawing.Size(43, 14);
-            labelControl8.TabIndex = 49;
-            labelControl8.Text = "Latency";
-            // 
-            // labelControl7
-            // 
-            labelControl7.Location = new System.Drawing.Point(14, 95);
-            labelControl7.Name = "labelControl7";
-            labelControl7.Size = new System.Drawing.Size(25, 14);
-            labelControl7.TabIndex = 48;
-            labelControl7.Text = "Rate";
-            // 
             // labelControl6
             // 
-            labelControl6.Location = new System.Drawing.Point(14, 68);
+            labelControl6.Location = new System.Drawing.Point(14, 63);
             labelControl6.Name = "labelControl6";
             labelControl6.Size = new System.Drawing.Size(37, 14);
             labelControl6.TabIndex = 47;
@@ -518,7 +478,7 @@
             // 
             // labelControl2
             // 
-            labelControl2.Location = new System.Drawing.Point(14, 39);
+            labelControl2.Location = new System.Drawing.Point(14, 36);
             labelControl2.Name = "labelControl2";
             labelControl2.Size = new System.Drawing.Size(50, 14);
             labelControl2.TabIndex = 46;
@@ -537,23 +497,23 @@
             grGnssConfig.Controls.Add(lblLon);
             grGnssConfig.Controls.Add(lblLat);
             grGnssConfig.Controls.Add(lblPosition);
-            grGnssConfig.Controls.Add(kim);
-            grGnssConfig.Location = new System.Drawing.Point(12, 118);
+            grGnssConfig.Controls.Add(lblTest);
+            grGnssConfig.Location = new System.Drawing.Point(5, 234);
             grGnssConfig.Name = "grGnssConfig";
-            grGnssConfig.Size = new System.Drawing.Size(630, 114);
+            grGnssConfig.Size = new System.Drawing.Size(346, 114);
             grGnssConfig.TabIndex = 9;
-            grGnssConfig.Text = "Gnss Configuration";
+            grGnssConfig.Text = "Mode and Location";
             // 
             // txtLevel
             // 
-            txtLevel.Location = new System.Drawing.Point(102, 81);
+            txtLevel.Location = new System.Drawing.Point(244, 46);
             txtLevel.Name = "txtLevel";
-            txtLevel.Size = new System.Drawing.Size(126, 20);
+            txtLevel.Size = new System.Drawing.Size(93, 20);
             txtLevel.TabIndex = 11;
             // 
             // labelControl10
             // 
-            labelControl10.Location = new System.Drawing.Point(27, 84);
+            labelControl10.Location = new System.Drawing.Point(244, 32);
             labelControl10.Name = "labelControl10";
             labelControl10.Size = new System.Drawing.Size(56, 14);
             labelControl10.TabIndex = 10;
@@ -561,48 +521,48 @@
             // 
             // txtAlt
             // 
-            txtAlt.Location = new System.Drawing.Point(447, 78);
+            txtAlt.Location = new System.Drawing.Point(244, 89);
             txtAlt.Name = "txtAlt";
-            txtAlt.Size = new System.Drawing.Size(150, 20);
+            txtAlt.Size = new System.Drawing.Size(93, 20);
             txtAlt.TabIndex = 9;
             // 
             // txtLon
             // 
-            txtLon.Location = new System.Drawing.Point(447, 52);
+            txtLon.Location = new System.Drawing.Point(130, 89);
             txtLon.Name = "txtLon";
-            txtLon.Size = new System.Drawing.Size(150, 20);
+            txtLon.Size = new System.Drawing.Size(89, 20);
             txtLon.TabIndex = 8;
             // 
             // txtLat
             // 
-            txtLat.Location = new System.Drawing.Point(447, 26);
+            txtLat.Location = new System.Drawing.Point(17, 89);
             txtLat.Name = "txtLat";
-            txtLat.Size = new System.Drawing.Size(150, 20);
+            txtLat.Size = new System.Drawing.Size(92, 20);
             txtLat.TabIndex = 7;
             // 
             // comboPosition
             // 
             comboPosition.EditValue = "";
-            comboPosition.Location = new System.Drawing.Point(104, 52);
+            comboPosition.Location = new System.Drawing.Point(130, 47);
             comboPosition.Name = "comboPosition";
             comboPosition.Properties.Buttons.AddRange(new DevExpress.XtraEditors.Controls.EditorButton[] { new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Combo) });
             comboPosition.Properties.Items.AddRange(new object[] { "STAT", "MOV", "HIL" });
-            comboPosition.Size = new System.Drawing.Size(124, 20);
+            comboPosition.Size = new System.Drawing.Size(89, 20);
             comboPosition.TabIndex = 6;
             comboPosition.SelectedIndexChanged += comboPosition_SelectedIndexChanged;
             // 
             // comboTestMode
             // 
-            comboTestMode.Location = new System.Drawing.Point(104, 26);
+            comboTestMode.Location = new System.Drawing.Point(17, 47);
             comboTestMode.Name = "comboTestMode";
             comboTestMode.Properties.Buttons.AddRange(new DevExpress.XtraEditors.Controls.EditorButton[] { new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Combo) });
             comboTestMode.Properties.Items.AddRange(new object[] { "NAV", "TRAC", "SING" });
-            comboTestMode.Size = new System.Drawing.Size(124, 20);
+            comboTestMode.Size = new System.Drawing.Size(92, 20);
             comboTestMode.TabIndex = 5;
             // 
             // lblAlt
             // 
-            lblAlt.Location = new System.Drawing.Point(365, 81);
+            lblAlt.Location = new System.Drawing.Point(244, 73);
             lblAlt.Name = "lblAlt";
             lblAlt.Size = new System.Drawing.Size(43, 14);
             lblAlt.TabIndex = 4;
@@ -610,7 +570,7 @@
             // 
             // lblLon
             // 
-            lblLon.Location = new System.Drawing.Point(366, 53);
+            lblLon.Location = new System.Drawing.Point(130, 73);
             lblLon.Name = "lblLon";
             lblLon.Size = new System.Drawing.Size(48, 14);
             lblLon.TabIndex = 3;
@@ -618,7 +578,7 @@
             // 
             // lblLat
             // 
-            lblLat.Location = new System.Drawing.Point(365, 26);
+            lblLat.Location = new System.Drawing.Point(20, 73);
             lblLat.Name = "lblLat";
             lblLat.Size = new System.Drawing.Size(45, 14);
             lblLat.TabIndex = 2;
@@ -626,33 +586,33 @@
             // 
             // lblPosition
             // 
-            lblPosition.Location = new System.Drawing.Point(27, 58);
+            lblPosition.Location = new System.Drawing.Point(130, 32);
             lblPosition.Name = "lblPosition";
             lblPosition.Size = new System.Drawing.Size(42, 14);
             lblPosition.TabIndex = 1;
             lblPosition.Text = "Position";
             // 
-            // kim
+            // lblTest
             // 
-            kim.Location = new System.Drawing.Point(27, 29);
-            kim.Name = "kim";
-            kim.Size = new System.Drawing.Size(59, 14);
-            kim.TabIndex = 0;
-            kim.Text = "Test Mode";
+            lblTest.Location = new System.Drawing.Point(19, 32);
+            lblTest.Name = "lblTest";
+            lblTest.Size = new System.Drawing.Size(59, 14);
+            lblTest.TabIndex = 0;
+            lblTest.Text = "Test Mode";
             // 
             // grLog
             // 
             grLog.Controls.Add(btnLogClear);
             grLog.Controls.Add(memoLog);
-            grLog.Location = new System.Drawing.Point(648, 13);
+            grLog.Location = new System.Drawing.Point(378, 15);
             grLog.Name = "grLog";
-            grLog.Size = new System.Drawing.Size(296, 532);
+            grLog.Size = new System.Drawing.Size(320, 590);
             grLog.TabIndex = 36;
             grLog.Text = "LOG";
             // 
             // btnLogClear
             // 
-            btnLogClear.Location = new System.Drawing.Point(230, 0);
+            btnLogClear.Location = new System.Drawing.Point(221, 5);
             btnLogClear.Name = "btnLogClear";
             btnLogClear.Size = new System.Drawing.Size(89, 19);
             btnLogClear.TabIndex = 37;
@@ -662,7 +622,7 @@
             // memoLog
             // 
             memoLog.Dock = System.Windows.Forms.DockStyle.Fill;
-            memoLog.Location = new System.Drawing.Point(2, 23);
+            memoLog.Location = new System.Drawing.Point(2, 27);
             memoLog.Name = "memoLog";
             memoLog.Properties.Appearance.BackColor = System.Drawing.Color.Black;
             memoLog.Properties.Appearance.Font = new System.Drawing.Font("Consolas", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, 0);
@@ -671,15 +631,57 @@
             memoLog.Properties.Appearance.Options.UseFont = true;
             memoLog.Properties.Appearance.Options.UseForeColor = true;
             memoLog.Properties.ReadOnly = true;
-            memoLog.Size = new System.Drawing.Size(292, 507);
+            memoLog.Size = new System.Drawing.Size(316, 561);
             memoLog.TabIndex = 0;
+            // 
+            // grSetTime
+            // 
+            grSetTime.Controls.Add(btnClear);
+            grSetTime.Controls.Add(DateEdits);
+            grSetTime.Controls.Add(btnSetCurrentDate);
+            grSetTime.Controls.Add(btnSetDate);
+            grSetTime.Location = new System.Drawing.Point(5, 139);
+            grSetTime.Name = "grSetTime";
+            grSetTime.Size = new System.Drawing.Size(346, 89);
+            grSetTime.TabIndex = 35;
+            grSetTime.Text = "Set Time";
+            // 
+            // DateEdits
+            // 
+            DateEdits.EditValue = null;
+            DateEdits.Location = new System.Drawing.Point(5, 46);
+            DateEdits.Name = "DateEdits";
+            DateEdits.Properties.Buttons.AddRange(new DevExpress.XtraEditors.Controls.EditorButton[] { new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Combo) });
+            DateEdits.Size = new System.Drawing.Size(234, 20);
+            DateEdits.TabIndex = 15;
+            // 
+            // btnSetCurrentDate
+            // 
+            btnSetCurrentDate.Appearance.Font = new System.Drawing.Font("Candara", 9F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, 0);
+            btnSetCurrentDate.Appearance.Options.UseFont = true;
+            btnSetCurrentDate.Location = new System.Drawing.Point(266, 0);
+            btnSetCurrentDate.Name = "btnSetCurrentDate";
+            btnSetCurrentDate.Size = new System.Drawing.Size(75, 23);
+            btnSetCurrentDate.TabIndex = 14;
+            btnSetCurrentDate.Text = "Set Start Time";
+            btnSetCurrentDate.Click += btnSetCurrentDate_Click;
+            // 
+            // btnSetDate
+            // 
+            btnSetDate.Location = new System.Drawing.Point(251, 43);
+            btnSetDate.Name = "btnSetDate";
+            btnSetDate.Size = new System.Drawing.Size(84, 23);
+            btnSetDate.TabIndex = 13;
+            btnSetDate.Text = "apply";
+            btnSetDate.Click += btnSetDate_Click;
             // 
             // Form1
             // 
             Appearance.BackColor = System.Drawing.Color.Linen;
             Appearance.Options.UseBackColor = true;
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.None;
-            ClientSize = new System.Drawing.Size(945, 557);
+            ClientSize = new System.Drawing.Size(715, 608);
+            Controls.Add(grSetTime);
             Controls.Add(grLog);
             Controls.Add(grGnssConfig);
             Controls.Add(grHilMonitor);
@@ -690,7 +692,7 @@
             Margin = new System.Windows.Forms.Padding(5, 4, 5, 4);
             Name = "Form1";
             Text = "Gnss Remote Controller";
-
+            Load += Form_Load;
             ((System.ComponentModel.ISupportInitialize)grNetwork).EndInit();
             grNetwork.ResumeLayout(false);
             grNetwork.PerformLayout();
@@ -718,6 +720,9 @@
             ((System.ComponentModel.ISupportInitialize)grLog).EndInit();
             grLog.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)memoLog.Properties).EndInit();
+            ((System.ComponentModel.ISupportInitialize)grSetTime).EndInit();
+            grSetTime.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)DateEdits.Properties).EndInit();
             ResumeLayout(false);
 
         }
@@ -753,27 +758,20 @@
         private DevExpress.XtraEditors.LabelControl lblLon;
         private DevExpress.XtraEditors.LabelControl lblLat;
         private DevExpress.XtraEditors.LabelControl lblPosition;
-        private DevExpress.XtraEditors.LabelControl kim;
+        private DevExpress.XtraEditors.LabelControl lblTest;
         private DevExpress.XtraEditors.TextEdit txtAlt;
         private DevExpress.XtraEditors.TextEdit txtLon;
         private DevExpress.XtraEditors.LabelControl lblPdop;
         private DevExpress.XtraEditors.LabelControl lblSimInfo;
         private DevExpress.XtraEditors.LabelControl lblTestMode;
-        private DevExpress.XtraEditors.LabelControl lblRfState;
         private DevExpress.XtraEditors.LabelControl lblGnssState;
-        private DevExpress.XtraEditors.LabelControl labelControl5;
         private DevExpress.XtraEditors.LabelControl labelControl4;
         private DevExpress.XtraEditors.LabelControl labelControl3;
-        private DevExpress.XtraEditors.LabelControl RFOut;
         private DevExpress.XtraEditors.LabelControl labelControl1;
         private DevExpress.XtraEditors.LabelControl labelControl9;
-        private DevExpress.XtraEditors.LabelControl labelControl8;
-        private DevExpress.XtraEditors.LabelControl labelControl7;
         private DevExpress.XtraEditors.LabelControl labelControl6;
         private DevExpress.XtraEditors.LabelControl labelControl2;
         private DevExpress.XtraEditors.LabelControl lblHilStatus;
-        private DevExpress.XtraEditors.LabelControl lblLatency;
-        private DevExpress.XtraEditors.LabelControl lblUpdateRate;
         private DevExpress.XtraEditors.LabelControl lblPacketCount;
         private DevExpress.XtraEditors.LabelControl lblUdpPort;
         private DevExpress.XtraEditors.GroupControl grLog;
@@ -782,6 +780,11 @@
         private DevExpress.XtraEditors.SimpleButton btnConfig;
         private DevExpress.XtraEditors.TextEdit txtLevel;
         private DevExpress.XtraEditors.LabelControl labelControl10;
+        private DevExpress.XtraEditors.GroupControl grSetTime;
+        private DevExpress.XtraEditors.SimpleButton btnSetDate;
+        private DevExpress.XtraEditors.SimpleButton btnSetCurrentDate;
+        private DevExpress.XtraEditors.DateTimeOffsetEdit DateEdits;
+        private DevExpress.XtraEditors.SimpleButton btnClear;
     }
 }
 

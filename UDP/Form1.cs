@@ -1,40 +1,60 @@
-﻿using System;
+﻿using DevExpress.CodeParser;
+using DevExpress.LookAndFeel;
+using DevExpress.XtraEditors;
+using DevExpress.XtraEditors.Controls;
+using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.Globalization;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using DevExpress.XtraEditors;
 
 namespace UDPMode
 {
     public partial class Form1 : XtraForm
     {
         private CancellationTokenSource _hilCts = null;
-        private SMBVTCP _tcp;
-        private CsvRouteReader _route;
+        private SMBVTCP _tcp = null;
+        private CsvRouteReader _route = null;
 
-        private string _localIp = "192.168.1.21";
+        // dt 배열 참조용 (UdpHilLoop에서 사용)
+        private double[] _times;
+
+        private const string StrInitialize = "initialize";
+        private const string ModeHIL = "HIL";
+        private const string IniFile = "config.ini";
+        private const string StatusPreparing = "PREPARING";
+        private const string StatusRunning = "RUNNING";
+        private const string StatusFinished = "FINISHED";
+        private const string StatusStoped = "STOPPED";
+
+
+        private string _localIp = "";
         private string _deviceIp = "";
         private int _scpiPort = 5025;
 
         private bool IsConnected => _tcp != null && _tcp.IsConnected;
 
         private static readonly string CFG_PATH =
-            System.IO.Path.Combine(
-                AppDomain.CurrentDomain.BaseDirectory, "config.ini");
+            System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, IniFile);
 
         public Form1()
         {
             InitializeComponent();
+        }
+        private void Form_Load(object sender, EventArgs e)
+        {
             _tcp = new SMBVTCP();
+            MakeScrollable();  
             InitCombos();
             LoadIni();
             SetControlState(false);
             ClearStatus();
+            StyleButtons();
         }
 
         private void InitCombos()
@@ -46,25 +66,28 @@ namespace UDPMode
             txtAlt.Text = "0";
         }
 
+        // ════════════════════════════════════════════
+        //          Change control states
+        // ════════════════════════════════════════════
         private void SetControlState(bool connected)
         {
             btnConnect.Enabled = !connected;
             btnDisconnect.Enabled = connected;
+
+            grSetTime.Enabled = connected;
             grGnssConfig.Enabled = connected;
-            btnInitialize.Enabled = connected;
-            btnConfig.Enabled = connected;
-            btnGnssOn.Enabled = connected;
-            btnGnssOff.Enabled = connected;
-            btnRfOn.Enabled = connected;
-            btnRfOff.Enabled = connected;
-            bool isHil = comboPosition.Text == "HIL";
+            grControl.Enabled = connected;
+            grStatus.Enabled = connected;
+
+            bool isHil = comboPosition.Text == ModeHIL;
             btnLoadCsv.Enabled = connected && isHil;
             btnHilStart.Enabled = false;
-            btnHilStop.Enabled = false;
+            btnHilStop.Enabled = connected;
+
         }
 
         // ════════════════════════════════════════════
-        // INI 로드 / 저장
+        //              Load the INI file 
         // ════════════════════════════════════════════
         private void LoadIni()
         {
@@ -84,6 +107,9 @@ namespace UDPMode
             catch { }
         }
 
+        // ════════════════════════════════════════════
+        //           Save as INI file
+        // ════════════════════════════════════════════
         private void SaveIni()
         {
             try
@@ -101,11 +127,12 @@ namespace UDPMode
         }
 
         // ════════════════════════════════════════════
-        // 로그
+        //                  Network
         // ════════════════════════════════════════════
         private void Log(string msg)
         {
             if (InvokeRequired) { Invoke(new Action(() => Log(msg))); return; }
+
             string line = $"[{DateTime.Now:HH:mm:ss}] {msg}";
             memoLog.Text += line + Environment.NewLine;
             memoLog.SelectionStart = memoLog.Text.Length;
@@ -113,65 +140,150 @@ namespace UDPMode
         }
 
         // ════════════════════════════════════════════
-        // 연결 / 해제
+        //              TCP/UDP connect
         // ════════════════════════════════════════════
         private async void btnConnect_Click(object sender, EventArgs e)
         {
             if (!ValidateInput()) return;
+
             btnConnect.Enabled = false;
             btnConnect.Text = "연결 중...";
             DrawStatusDot(Color.FromArgb(230, 81, 0));
+
             try
             {
+                // TcpConnect
                 _deviceIp = txtIP.Text.Trim();
                 _scpiPort = int.Parse(txtScpiPort.Text.Trim());
                 await _tcp.ConnectAsync(_deviceIp, _scpiPort);
-                _localIp = "192.168.1.21";
+
+                //  Pc Ip
+                _localIp = getLocalIp();
+
+                // SMVB identification and optins
                 string idn = await _tcp.GetIdentityAsync();
                 string opts = await _tcp.GetOptionsAsync();
+
+                // Level
                 double currentLevel = await _tcp.GetLevelAsync();
                 txtLevel.Text = currentLevel.ToString("F1");
                 Log($"현재 Level: {currentLevel} dBm");
+
                 DrawStatusDot(Color.FromArgb(46, 125, 50));
+
+                //enable
                 SetControlState(true);
-                Log($"Connected: {idn}");
-                Log($"Options: {opts}");
-                Log($"Local IP: {_localIp}");
+
+                // Log
+                Log($"Connected: {idn}"); Log($"Options: {opts}"); Log($"Local IP: {_localIp}");
             }
             catch (Exception ex)
             {
                 _tcp.Disconnect();
                 DrawStatusDot(Color.FromArgb(198, 40, 40));
                 btnConnect.Enabled = true; btnConnect.Text = "연결";
+
+
                 Log($"연결 실패: {ex.Message}");
                 XtraMessageBox.Show($"연결 실패\n\n{ex.Message}",
                     "오류", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-        private void btnDisconnect_Click(object sender, EventArgs e)
+        //  Disconnect
+        private async void btnDisconnect_Click(object sender, EventArgs e)
         {
-            StopHil();
+            await StopHil();
             _tcp.Disconnect();
             DrawStatusDot(Color.FromArgb(198, 40, 40));
             SetControlState(false); btnConnect.Text = "연결";
-            ClearStatus(); Log("Disconnected");
+            ClearStatus();
+            Log("Disconnected");
         }
 
         // ════════════════════════════════════════════
-        // Position 드롭다운
+        //                  Set Time
+        // ════════════════════════════════════════════
+        private async void btnSetDate_Click(object sender, EventArgs e)
+        {
+            if (DateEdits.EditValue == null)
+            {
+                XtraMessageBox.Show("날짜를 먼저 선택해주세요.", "알림", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+            try
+            {
+                string year = ((DateTimeOffset)DateEdits.EditValue).Year.ToString();
+                string month = ((DateTimeOffset)DateEdits.EditValue).Month.ToString();
+                string day = ((DateTimeOffset)DateEdits.EditValue).Day.ToString();
+                string hour = ((DateTimeOffset)DateEdits.EditValue).Hour.ToString();
+                string minute = ((DateTimeOffset)DateEdits.EditValue).Minute.ToString();
+                string second = ((DateTimeOffset)DateEdits.EditValue).Second.ToString();
+
+                await _tcp.SetTimeMode();//SMBV100B uses UTC as the base time reference
+                await _tcp.SetDate(year, month, day);
+                await _tcp.SetTime(hour, minute, second);
+                Log($"Set Date:{year}-{month}-{day}");
+                Log($"Set Time:{hour}:{minute}:{second}");
+            }
+            catch (Exception ex)
+            {
+                Log($"설정 실패{ex.Message} ");
+                XtraMessageBox.Show($"설정 실패\n\n{ex.Message}", "오류", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private async void btnSetCurrentDate_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                await _tcp.SetTimeMode();
+                await _tcp.SetCurrentTime();
+                string Dates = await _tcp.GetStartDateAsync();
+                string Times = await _tcp.GetStartTimeAsync();
+                DateEdits.DateTimeOffset = SetTimes(Dates, Times);
+                string LogDates = (DateEdits.DateTimeOffset.Date.ToString()).Substring(0, 10);
+                Log($"Current Date: {LogDates}- {DateEdits.DateTimeOffset.TimeOfDay}");
+            }
+            catch (Exception ex)
+            {
+                Log($"설정 실패{ex.Message} ");
+                XtraMessageBox.Show(ex.Message, "오류", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private DateTimeOffset SetTimes(string Dates, string Times)
+        {
+            var dateParts = Dates.Split(',');
+            var timeParts = Times.Split(',');
+            return new DateTimeOffset(
+                int.Parse(dateParts[0]),
+                int.Parse(dateParts[1]),
+                int.Parse(dateParts[2]),
+                int.Parse(timeParts[0]),
+                int.Parse(timeParts[1]),
+                int.Parse(timeParts[2]),
+                TimeSpan.Zero
+                );
+        }
+
+        private async void btnClear_Click(object sender, EventArgs e)
+        {
+            await _tcp.ResetIni();
+            Log("장비 리셋");
+        }  
+
+        // ════════════════════════════════════════════
+        //             Mode and Location
         // ════════════════════════════════════════════
         private void comboPosition_SelectedIndexChanged(object sender, EventArgs e)
         {
-            bool isHil = comboPosition.Text == "HIL";
+            bool isHil = comboPosition.Text == ModeHIL;
             btnLoadCsv.Enabled = IsConnected && isHil;
             btnHilStart.Enabled = false;
             grHilMonitor.Enabled = isHil;
         }
 
-        // ════════════════════════════════════════════
-        // Initialize
-        // ════════════════════════════════════════════
         private async void btnInitialize_Click(object sender, EventArgs e)
         {
             if (!IsConnected) return;
@@ -180,19 +292,18 @@ namespace UDPMode
             btnInitialize.Text = "초기화 중...";
             try
             {
-                //UI값 → 명령어로 전달
                 string mode = comboPosition.Text;
                 double lat = double.Parse(txtLat.Text, CultureInfo.InvariantCulture);
                 double lon = double.Parse(txtLon.Text, CultureInfo.InvariantCulture);
                 double alt = double.Parse(txtAlt.Text, CultureInfo.InvariantCulture);
                 int udpPort = int.Parse(txtUdpPort.Text.Trim());
-
                 Log("Initialize 시작...");
 
-                //
+                // GNSS 시뮬레이션 모드와 장소 설정
                 await _tcp.InitGnssAsync(mode, lat, lon, alt, udpPort);
+
                 string level = txtLevel.Text.Trim();
-                await _tcp.SendAsync($":SOURce1:BB:GNSS:POWer:REFerence {level}");
+                await _tcp.SetReferencePowerAsync(level);
                 Log($"RF Level → {level} dBm");
 
                 string info = await _tcp.GetSimInfoAsync();
@@ -210,18 +321,16 @@ namespace UDPMode
             finally
             {
                 btnInitialize.Enabled = true;
-                btnInitialize.Text = "Initialize";
+                btnInitialize.Text = StrInitialize;
             }
         }
 
-        // ════════════════════════════════════════════
-        // Config
-        // ════════════════════════════════════════════
         private async void btnConfig_Click(object sender, EventArgs e)
         {
             if (!IsConnected) return;
             if (!ValidateCoordinates()) return;
             btnConfig.Enabled = false;
+
             try
             {
                 double lat = double.Parse(txtLat.Text, CultureInfo.InvariantCulture);
@@ -243,9 +352,8 @@ namespace UDPMode
             if (!IsConnected) return;
             try
             {
-                await _tcp.SendAsync(":SOURce1:BB:GNSS:STATe 1");
-                Log("GNSS State → ON");
-                lblGnssState.Text = "ON";
+                await _tcp.SendOnGnssAsync();
+                Log("GNSS State → ON"); lblGnssState.Text = "ON";
                 lblGnssState.ForeColor = Color.FromArgb(46, 125, 50);
             }
             catch (Exception ex) { Log($"GNSS ON 실패: {ex.Message}"); }
@@ -258,15 +366,14 @@ namespace UDPMode
             {
                 await _tcp.SendAsync(":SOURce1:BB:GNSS:STATe 0");
                 Log("GNSS State → OFF");
+
                 lblGnssState.Text = "OFF";
                 lblGnssState.ForeColor = Color.FromArgb(198, 40, 40);
             }
             catch (Exception ex) { Log($"GNSS OFF 실패: {ex.Message}"); }
         }
 
-        // ════════════════════════════════════════════
-        // RF ON / OFF
-        // ════════════════════════════════════════════
+
         private async void btnRfOn_Click(object sender, EventArgs e)
         {
             if (!IsConnected) return;
@@ -274,8 +381,6 @@ namespace UDPMode
             {
                 await _tcp.SendAsync(":OUTPut1:STATe 1");
                 Log("RF Output → ON");
-                lblRfState.Text = "ON";
-                lblRfState.ForeColor = Color.FromArgb(46, 125, 50);
             }
             catch (Exception ex) { Log($"RF ON 실패: {ex.Message}"); }
         }
@@ -287,15 +392,11 @@ namespace UDPMode
             {
                 await _tcp.SendAsync(":OUTPut1:STATe 0");
                 Log("RF Output → OFF");
-                lblRfState.Text = "OFF";
-                lblRfState.ForeColor = Color.FromArgb(198, 40, 40);
             }
             catch (Exception ex) { Log($"RF OFF 실패: {ex.Message}"); }
         }
 
-        // ════════════════════════════════════════════
-        // CSV Load
-        // ════════════════════════════════════════════
+ 
         private void btnLoadCsv_Click(object sender, EventArgs e)
         {
             using var dlg = new OpenFileDialog
@@ -309,11 +410,14 @@ namespace UDPMode
             {
                 _route = new CsvRouteReader();
                 _route.Load(dlg.FileName);
+
                 var first = _route.GetAt(0);
                 txtLat.Text = first.Latitude.ToString(
                     "F6", CultureInfo.InvariantCulture);
+
                 txtLon.Text = first.Longitude.ToString(
                     "F6", CultureInfo.InvariantCulture);
+
                 txtAlt.Text = first.Altitude.ToString(
                     "F0", CultureInfo.InvariantCulture);
 
@@ -325,9 +429,8 @@ namespace UDPMode
             }
             catch (Exception ex)
             {
-                Log($"CSV 로드 실패: {ex.Message}");
                 XtraMessageBox.Show($"CSV 로드 실패\n\n{ex.Message}",
-                    "오류", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    "오류", MessageBoxButtons.OK, MessageBoxIcon.Error); Log($"CSV 로드 실패: {ex.Message}");
             }
         }
 
@@ -345,7 +448,6 @@ namespace UDPMode
             }
 
             int udpPort = int.Parse(txtUdpPort.Text.Trim());
-            int intervalMs = 1000;
 
             btnHilStart.Enabled = false; btnHilStop.Enabled = true;
             btnInitialize.Enabled = false; btnLoadCsv.Enabled = false;
@@ -355,35 +457,34 @@ namespace UDPMode
 
             _hilCts = new CancellationTokenSource();
 
-            lblPacketCount.Text = "0"; lblLatency.Text = "-";
-            lblUpdateRate.Text = $"{1000 / intervalMs} Hz";
+            lblPacketCount.Text = "0";
             lblUdpPort.Text = udpPort.ToString();
-            lblHilStatus.Text = "PREPARING";
+            lblHilStatus.Text = StatusPreparing;
             lblHilStatus.ForeColor = Color.FromArgb(230, 81, 0);
 
             long packetCount = 0;
-            var totalWatch = new Stopwatch();
+            //var totalWatch = new Stopwatch();// Latency Calibration의 synchronization과 HWTime, ElapsedTime을 위한
 
             try
             {
 
-                //  HWTime 읽기
-                double hwTime = await _tcp.GetHwTimeAsync();
-                Log($" HWTime = {hwTime:F2}초");
-                if (hwTime <= 0) throw new Exception("HWTime = 0. Initialize를 먼저 실행하세요.");
+                // status  
+                lblHilStatus.Text = StatusRunning;
+                lblHilStatus.ForeColor = Color.FromArgb(46, 125, 50);
+                DrawStatusDot(Color.FromArgb(230, 81, 0));
 
-                //  &GTL + TCP 닫기
-                var delayWatch = Stopwatch.StartNew();
-                await Task.Delay(1000);
-                await _tcp.GoToLocalAsync();
-                await Task.Delay(1000);
-                _tcp.Disconnect();
-                Log(" &GTL → TCP 닫기 완료");
+                // start simulation
+                await _tcp.SendAsync(":SOURce1:BB:GNSS:STATe 1");
+                await Task.Delay(3000);
+                await _tcp.SendAsync(":OUTPut1:STATe 1");
 
-                //  오프셋 계산
-                double measuredDelay = delayWatch.Elapsed.TotalSeconds;
-                double offset = hwTime + measuredDelay + 0.0;   
-                Log($" offset = {offset:F2}" + $" (HWTime={hwTime:F2}" +$" + 지연={measuredDelay:F3})");
+
+                //  &GTL 
+                await _tcp.GoToLocalAsync();// page 245  L.C 5번 Go to Local
+                await Task.Delay(1000);
+                //_tcp.Disconnect();
+                //Log(" &GTL → TCP 닫기 완료");
+
 
                 //  ECEF 사전 변환
                 int n = _route.Count;
@@ -393,43 +494,30 @@ namespace UDPMode
 
                 //  UDP 소켓 생성
                 UdpClient udp;
-                try
-                {
-                    udp = new UdpClient(new IPEndPoint(IPAddress.Parse(_localIp), 0));
-                    Log($" UDP 소켓 생성 (바인딩: {_localIp})");
-                }
-                catch
-                {
-                    udp = new UdpClient();
-                    Log(" UDP 소켓 생성 (자동 라우팅)");
-                }
-                var endpoint = new IPEndPoint(
-                    IPAddress.Parse(_deviceIp), udpPort);
+                udp = new UdpClient();//new IPEndPoint         
+                Log($" UDP 소켓 생성 (바인딩: {_localIp})");
 
-                //  UDP 전송 루프
-                totalWatch.Start();
-                Log($" UDP HIL 시작: {n}개 / {intervalMs}ms (속도/가속도/저크 포함)");
+                var endpoint = new IPEndPoint(IPAddress.Parse(_deviceIp), udpPort);
+              
 
-                BeginInvoke(new Action(() =>
-                {
-                    lblHilStatus.Text = "RUNNING";
-                    lblHilStatus.ForeColor = Color.FromArgb(46, 125, 50);
-                    lblRfState.Text = "ON";
-                    lblRfState.ForeColor = Color.FromArgb(46, 125, 50);
-                    DrawStatusDot(Color.FromArgb(230, 81, 0));
-                }));
+                //HWT
+                double hwTime = await _tcp.GetHwTimeAsync();// L.C 4번 
+                Log($" HWTime = {hwTime:F2}초");
+                if (hwTime <= 0) throw new Exception("HWTime = 0. Initialize를 먼저 실행하세요.");
+                await Task.Delay(1000);
 
-                packetCount = await Task.Run(() =>
-                    UdpHilLoop(px, py, pz, times, n, offset,intervalMs, endpoint, udp, _hilCts.Token));
+                // UDP 전송
+                packetCount = await Task.Run(()
+                    => UdpHilLoop(px, py, pz, times, n, endpoint, udp, hwTime, _hilCts.Token));
+                Log($" UDP HIL 시작: {n}개 (속도/가속도/저크 포함)");
 
+                // udp close
                 udp.Close();
-
                 Log($"경로 재생 완료: 총 {packetCount:N0} 패킷 전송");
-                BeginInvoke(new Action(() =>
-                {
-                    lblHilStatus.Text = "FINISHED";
-                    lblHilStatus.ForeColor = Color.FromArgb(21, 101, 192);
-                }));
+
+                lblHilStatus.Text = StatusFinished;
+                lblHilStatus.ForeColor = Color.FromArgb(21, 101, 192);
+
             }
             catch (OperationCanceledException)
             {
@@ -441,22 +529,19 @@ namespace UDPMode
             }
             finally
             {
-                totalWatch.Stop();
-                if (lblHilStatus.Text != "FINISHED")
+                if (lblHilStatus.Text != StatusFinished)
                 {
-                    lblHilStatus.Text = "STOPPED";
+                    lblHilStatus.Text = StatusStoped;
                     lblHilStatus.ForeColor = Color.FromArgb(198, 40, 40);
                 }
-                Log($"HIL 종료: {packetCount:N0} 패킷" +
-                    $" / {totalWatch.Elapsed.TotalSeconds:F1}초");
-
+                Log($"HIL 종료: {packetCount:N0} 패킷" + $" / 초");//{totalWatch.Elapsed.TotalSeconds:F1}
                 Log(" TCP 재연결 중...");
                 try
                 {
-                    await _tcp.ConnectAsync(_deviceIp, _scpiPort);
-                    DrawStatusDot(Color.FromArgb(46, 125, 50));
-                    Log(" TCP 재연결 완료");
-                    string stats = await _tcp.GetHilLatencyStatsAsync(); // 255page Commands 해석
+                    //await _tcp.ConnectAsync(_deviceIp, _scpiPort);
+                    //DrawStatusDot(Color.FromArgb(46, 125, 50));
+                    //Log(" TCP 재연결 완료");
+                    string stats = await _tcp.GetHilLatencyStatsAsync(); // 255page Commands 해석// Latency Calibration
                     Log($" HIL 통계: {stats}");
                     string err = await _tcp.GetErrorAsync();
                     Log($" 장비 에러: {err}");
@@ -470,7 +555,8 @@ namespace UDPMode
                     btnConnect.Enabled = true;
                     btnConnect.Text = "연결";
                 }
-
+                await Task.Delay(1000);
+                await StopHil();
                 btnHilStart.Enabled = true;
                 btnHilStop.Enabled = false;
             }
@@ -503,9 +589,7 @@ namespace UDPMode
             }
         }
 
-        // ════════════════════════════════════════════
         // 속도 계산 — (현재위치 - 이전위치) / dt
-        // ════════════════════════════════════════════
         // i=0: 이전이 없음 → 속도 0
         //
         private void CalcVelocity(
@@ -530,32 +614,25 @@ namespace UDPMode
             }
         }
 
-        // ════════════════════════════════════════════
+
         // 가속도 계산 — (다음속도 - 현재속도) / dt(시간)
-        // ════════════════════════════════════════════
         // i=0 또는 i=n-1: 경계 → 가속도 0
-        //
         private double CalcAcceleration(double v, double vNext, double dt)
         {
             return (vNext - v) / dt;
         }
 
-        // ════════════════════════════════════════════
         // 저크 계산 — (다음가속도 - 현재가속도) / dt
-        // ════════════════════════════════════════════
         // i < 2 또는 i >= n-2: 경계 → 저크 0
-        //
         private double CalcJerk(double a, double aNext, double dt)
         {
             return (aNext - a) / dt;
         }
 
-        // dt 배열 참조용 (UdpHilLoop에서 사용)
-        private double[] _times;
-
         private double GetDt(int i)
         {
-            if (i <= 0 || _times == null) return 1.0;
+            if (i <= 0 || _times == null) return 1.0;// 왜 1.0이지?
+
             double dt = _times[i] - _times[i - 1];
             return (dt > 0) ? dt : 1.0;
         }
@@ -563,19 +640,17 @@ namespace UDPMode
         // ════════════════════════════════════════════
         // UDP HIL 전송 루프 — 백그라운드 스레드
         // ════════════════════════════════════════════
-        //
-        // 속도/가속도/저크를 CalcVelocity, CalcAcceleration,
-        // CalcJerk 메서드로 캡슐화하여 루프를 깔끔하게 유지
-        //
+
         private long UdpHilLoop(
             double[] px, double[] py, double[] pz,
-            double[] times, int n, double offset,
-            int intervalMs, IPEndPoint endpoint,
-            UdpClient udp, CancellationToken token)
+            double[] times, int n,
+            IPEndPoint endpoint, UdpClient udp, double timeOffset, CancellationToken token)
         {
             _times = times; // GetDt에서 사용
             long count = 0;
+            double elapsed = 0;
             var loopWatch = new Stopwatch();
+            loopWatch.Start();
 
             for (int i = 0; i < n && !token.IsCancellationRequested; i++)
             {
@@ -621,20 +696,21 @@ namespace UDPMode
                     jy = CalcJerk(ay, ayNext, dt);
                     jz = CalcJerk(az, azNext, dt);
                 }
-
                 // ── ElapsedTime ──
-                double elapsed = offset + times[i];
+
+                elapsed = timeOffset + times[i];//
 
                 // ── 패킷 빌드 + 전송 ──
                 byte[] packet = HilPacket.Build(
-                    elapsed,
-                    px[i], py[i], pz[i],
-                    vx, vy, vz,
-                    ax, ay, az,
-                    jx, jy, jz);
+                        elapsed,
+                        px[i], py[i], pz[i],
+                        vx, vy, vz,
+                        ax, ay, az,
+                        jx, jy, jz);
+
                 udp.Send(packet, packet.Length, endpoint);
 
-                // ── UI 업데이트 ──
+                // ── UI 업데이트 ── // 명려어로 바꾸기
                 count++;
                 int remaining = n - i - 1;
                 long currentCount = count;
@@ -643,35 +719,49 @@ namespace UDPMode
                 BeginInvoke(new Action(() =>
                 {
                     lblPacketCount.Text = currentCount.ToString("N0");
-                    lblLatency.Text = $"{loopMs} ms";
                     lblHilStatus.Text = $"{remaining} left";
                 }));
 
-                // ── 주기 대기 ──
-                int elapsedMs = (int)loopWatch.ElapsedMilliseconds;
-                int delay = intervalMs - elapsedMs;
-                if (delay > 0)
-                    Thread.Sleep(delay);
+                // ── 주기 대기 (secInv:)──
+                if (i < n - 1)
+                {
+                    int elapsedMs = (int)loopWatch.ElapsedMilliseconds;
+                    int intervalMs;
+                    intervalMs = (int)((times[i + 1] - times[i]) * 1000); // 초 → ms 변환!
+                    double delay = intervalMs - elapsedMs;
+                    if (delay > 0)
+                        Thread.Sleep((int)delay);
+                }
+                //else
+                //intervalMs = (int)((times[i] - times[i - 1]) * 1000); // 마지막: 이전 간격 유지
             }
 
             _times = null;
             return count;
         }
 
-        // ════════════════════════════════════════════
-        // HIL Stop
-        // ════════════════════════════════════════════
-        private void btnHilStop_Click(object sender, EventArgs e)
+
+        private async void btnHilStop_Click(object sender, EventArgs e)
         {
-            StopHil();
+            await StopHil();
         }
 
-        private void StopHil()
+        //내 PC의 IPv4 주소 하나를 뽑아서 문자열로 반환
+        private string getLocalIp()
         {
+            var host = Dns.GetHostEntry(Dns.GetHostName());// 내 pc 이름으로 DNS 조회
+            var ip = host.AddressList.FirstOrDefault(a => a.AddressFamily == AddressFamily.InterNetwork);
+            return ip?.ToString();
+        }
+
+        private async Task StopHil()
+        {
+            await _tcp.SendOffRadioFreq();
+            await Task.Delay(1000);
+            await _tcp.SendOffGnssAsync();
             _hilCts?.Cancel();
             _hilCts = null;
         }
-
         // ════════════════════════════════════════════
         // Log Clear
         // ════════════════════════════════════════════
@@ -694,12 +784,8 @@ namespace UDPMode
             }
             lblGnssState.Text = gnss;
             lblGnssState.ForeColor = gnss == "ON"
-                ? Color.FromArgb(46, 125, 50)
-                : Color.FromArgb(198, 40, 40);
-            lblRfState.Text = rf;
-            lblRfState.ForeColor = rf == "ON"
-                ? Color.FromArgb(46, 125, 50)
-                : Color.FromArgb(198, 40, 40);
+                ? Color.FromArgb(46, 125, 50)// 초록색
+                : Color.FromArgb(198, 40, 40);// 빨간색
             lblTestMode.Text = mode;
             lblSimInfo.Text = info;
         }
@@ -708,17 +794,13 @@ namespace UDPMode
         {
             lblGnssState.Text = "-";
             lblGnssState.ForeColor = Color.Gray;
-            lblRfState.Text = "-";
-            lblRfState.ForeColor = Color.Gray;
             lblTestMode.Text = "-";
             lblSimInfo.Text = "-";
-            lblPdop.Text = "-";
             lblPacketCount.Text = "0";
-            lblUpdateRate.Text = "-";
-            lblLatency.Text = "-";
             lblHilStatus.Text = "-";
             lblUdpPort.Text = "-";
         }
+
 
         // ════════════════════════════════════════════
         // 검증
@@ -790,11 +872,46 @@ namespace UDPMode
             old?.Dispose();
         }
 
-        protected override void OnFormClosing(FormClosingEventArgs e)
+        private void MakeScrollable()
         {
-            StopHil();
-            _tcp?.Disconnect();
-            SaveIni();
+            var scroll = new DevExpress.XtraEditors.XtraScrollableControl();
+            scroll.Dock = DockStyle.Fill;
+            while (this.Controls.Count > 0)
+                scroll.Controls.Add(this.Controls[0]);
+            this.Controls.Add(scroll);
+        }
+
+        private void StyleButtons()
+        {
+            var groups = new Control[] { grControl, grNetwork };
+            foreach (var group in groups)
+            {
+                foreach (var btn in grControl.Controls.OfType<SimpleButton>())
+                {
+                    btn.Appearance.BackColor = Color.FromArgb(60, 60, 60);
+                    btn.Appearance.ForeColor = Color.White;
+                    btn.Appearance.BorderColor = Color.FromArgb(90, 90, 90);
+                    btn.Appearance.Options.UseBackColor = true;
+                    btn.Appearance.Options.UseForeColor = true;
+                    btn.Appearance.Options.UseBorderColor = true;
+                }
+            }
+
+            // 강조 버튼 따로
+            btnInitialize.Appearance.BackColor = Color.Yellow;
+            btnHilStart.Appearance.BackColor = Color.FromArgb(55, 138, 221);
+            btnLoadCsv.Appearance.BackColor = Color.FromArgb(29, 158, 117);
+            btnHilStop.AppearanceDisabled.ForeColor = Color.White;
+            btnHilStop.AppearanceDisabled.Options.UseForeColor = true;
+        }
+        protected override async void OnFormClosing(FormClosingEventArgs e)
+        {
+            if (IsConnected)
+            {
+                await StopHil();
+                _tcp?.Disconnect();
+                SaveIni();
+            }
             base.OnFormClosing(e);
         }
     }

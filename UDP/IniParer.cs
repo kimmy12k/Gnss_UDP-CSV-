@@ -20,6 +20,7 @@ namespace UDPMode
             foreach (string rawLine in File.ReadAllLines(filePath))
             {
                 string line = rawLine.Trim();
+                // ini 파일 안에서 주석을 제외하기 위한 코드
                 if (string.IsNullOrEmpty(line) || line.StartsWith(";") || line.StartsWith("#"))
                     continue;
 

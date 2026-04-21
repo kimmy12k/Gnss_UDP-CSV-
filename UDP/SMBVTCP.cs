@@ -1,9 +1,13 @@
-﻿using System;
+﻿using DevExpress.DataAccess.Native.Web;
+using DevExpress.Utils.Html.Internal;
+using DevExpress.XtraEditors;
+using System;
 using System.Globalization;
 using System.IO;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace UDPMode
 {
@@ -38,19 +42,23 @@ namespace UDPMode
 
         public async Task SendAsync(string command)
         {
-            if (!IsConnected) throw new InvalidOperationException("장비가 연결되지 않았습니다.");
+            if (!IsConnected)throw new InvalidOperationException("장비가 연결되지 않았습니다.");
+
             await _writer.WriteLineAsync(command);
             await Task.Delay(COMMAND_DELAY_MS);
         }
 
-        public async Task<string> QueryAsync(string command)
+        public async Task<string> QueryAsync(string command, int timeoutMs=1000)
         {
+            
             await SendAsync(command);
             string response = await _reader.ReadLineAsync();
             return response?.Trim() ?? string.Empty;
         }
+ 
 
-        public async Task CheckErrorAsync()
+
+public async Task CheckErrorAsync()
         {
             string err = await QueryAsync(":SYSTem:ERRor?");
             if (!err.StartsWith("0")) throw new Exception($"장비 에러: {err}");
@@ -64,62 +72,80 @@ namespace UDPMode
 
         public async Task<string> GetOptionsAsync()
             => await QueryAsync("*OPT?");
+       
 
+        //----------------------------------------------------------
         public async Task ResetAsync()
         {
-            await SendAsync("*RST");
-            await Task.Delay(5000);
+            await SendAsync("*RST;");
         }
 
         public async Task ClearStatusAsync()
-            => await SendAsync("*CLS");
+            => await SendAsync("*CLS;");
+
+
+        public async Task SetReferencePowerAsync(string level)
+            =>await SendAsync($":SOURce1:BB:GNSS:POWer:REFerence {level}");
+
+        public async Task SetTimeMode(string mode = "UTC")
+            => await SendAsync($"BB:GNSS:TIME:STARt:TBASis {mode}");
+
+        public async Task SetDate(string year, string month, string day)
+            => await SendAsync($":SOURce1:BB:GNSS:TIME:STARt:DATE {year}, {month}, {day}");
+
+        public async Task SetTime(string hour, string minute, string second)
+            => await SendAsync($":SOURce1:BB:GNSS:TIME:STARt:TIME {hour}, {minute}, {second}");
+
+        public async Task SetCurrentTime()
+            => await SendAsync(":SOURce1:BB:GNSS:TIME:STARt:SCTime");
+        
 
         public async Task GoToLocalAsync()
             => await SendAsync("&GTL");
-        
-        
+        public async Task SendOnGnssAsync()
+         => await SendAsync(":SOURce1: BB:GNSS: STATe 1");
+        public async Task SendOffGnssAsync()
+            => await SendAsync(":SOURce1: BB:GNSS: STATe 0");
+        public async Task SendOnRadioFreq()
+            => await SendAsync(":OUTPut1:STATe 1");
+        public async Task SendOffRadioFreq()
+            => await SendAsync(":OUTPut1:STATe 0");
+
+
         //27~29pge 장비 실행 절차,246~247page HIL 운영절차
         public async Task InitGnssAsync(
             string mode, double lat, double lon, double alt,
             int udpPort = 7755, double latency = 0.15)
         {
-            await ResetAsync();
-            await ClearStatusAsync();
-            await CheckErrorAsync();
-            await Task.Delay(2000);
+    
 
-            await SendAsync(":SOURce1:BB:GNSS:TMODe NAV");
-            await SendAsync($":SOURce1:BB:GNSS:RECeiver:V1:POSition {mode}");
+            await SendAsync(":SOURce1:BB:GNSS:TMODe NAV");//P.32 -> Switching from one test mode to the other presets all satellites parameters to theirdefault values.
+            await SendAsync($":SOURce1:BB:GNSS:RECeiver:V1:POSition {mode}");//
 
+            if (mode == "HIL")// page 251   HIL 진입 조건
+            {
+                await SendAsync($":SOURce1:BB:GNSS:RECeiver:V1:HIL:SLATency {latency:F3}");
+                await SendAsync(":SOURce1:BB:GNSS:RECeiver:V1:HIL:ITYPe UDP");
+                await SendAsync($":SOURce1:BB:GNSS:RECeiver:V1:HIL:PORT  {udpPort}");
+
+            }
             await SendAsync(":SOURce1:BB:GNSS:RECeiver:V1:LOCation:SELect \"User Defined\"");
             await SendAsync(":SOURce1:BB:GNSS:RECeiver:V1:LOCation:COORdinates:RFRame WGS84");
             await SendAsync(":SOURce1:BB:GNSS:RECeiver:V1:LOCation:COORdinates:FORMat DEC");
             await SendAsync($":SOURce1:BB:GNSS:RECeiver:V1:LOCation:COORdinates:DEC:WGS {lon},{lat},{alt}");
 
-            if (mode == "HIL")
-            {
-                await SendAsync(":SOURce1:BB:GNSS:RECeiver:V1:HIL:ITYPe UDP");
-                await SendAsync($":SOURce1:BB:GNSS:RECeiver:V1:HIL:PORT {udpPort}");
-                await SendAsync($":SOURce1:BB:GNSS:RECeiver:V1:HIL:SLATency {latency:F3}");
-            }
-
-            await SendAsync(":SOURce1:BB:GNSS:STATe 1");
-            await Task.Delay(5000);
-            await CheckErrorAsync();
-            await SendAsync(":OUTPut1:STATe 1");
+            //await SendAsync(":SOURce1:BB:GNSS:STATe 1");
+            //await Task.Delay(3000);
+            //await CheckErrorAsync();
+            //await SendAsync(":OUTPut1:STATe 1");
         }
 
-        public async Task SendHilPositionAsync(
-            double elapsedTime, double ecefX, double ecefY, double ecefZ,
-            double velX = 0, double velY = 0, double velZ = 0,
-            double accX = 0, double accY = 0, double accZ = 0,
-            double yaw = 0, double pitch = 0, double roll = 0)
+        public async Task ResetIni()
         {
-            string cmd = $":SOURce1:BB:GNSS:RT:RECeiver:V1:HILPosition:MODE:A " +
-                string.Format(CultureInfo.InvariantCulture,
-                    "{0:F4},{1:F4},{2:F4},{3:F4},{4:F4},{5:F4},{6:F4},{7:F4},{8:F4},{9:F4},{10:F4},{11:F4},{12:F4}",
-                    elapsedTime, ecefX, ecefY, ecefZ, velX, velY, velZ, accX, accY, accZ, yaw, pitch, roll);
-            await SendAsync(cmd);
+            await ResetAsync();
+            await ClearStatusAsync();
+            await CheckErrorAsync();
+            await Task.Delay(2000);
         }
 
         public async Task ChangePositionAsync(double lat, double lon, double alt)
@@ -152,12 +178,21 @@ namespace UDPMode
         }
 
         public async Task<string> GetHilLatencyStatsAsync()
-            => await QueryAsync(":SOURce1:BB:GNSS:RT:RECeiver:V1:HILPosition:LATency:STATistics?");
+            =>await QueryAsync(":SOURce1:BB:GNSS:RT:RECeiver:V1:HILPosition:LATency:STATistics?");
+
 
         public async Task<double> GetLevelAsync()
         {
             string response = await QueryAsync(":SOURce1:POWer:LEVel:IMMediate:AMPLitude?");
             return double.TryParse(response, out double level) ? level : -999;
         }
+
+        public async Task<string> GetStartDateAsync()
+            => await QueryAsync(":SOURce1:BB:GNSS:TIME:STARt:DATE?");
+        public async Task<string> GetStartTimeAsync()
+            => await QueryAsync(":SOURce1:BB:GNSS:TIME:STARt:TIME?");
+      
+        
+
     }
 }

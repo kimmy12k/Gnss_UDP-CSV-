@@ -18,6 +18,10 @@ namespace UDPMode
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
+          
+            // 글꼴 추가 코드
+            DevExpress.Skins.SkinManager.EnableFormSkins();
+            DevExpress.LookAndFeel.UserLookAndFeel.Default.SetSkinStyle("The Bezier");
             Application.Run(new Form1());
         }
     }

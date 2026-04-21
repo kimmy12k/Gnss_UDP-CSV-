@@ -55,7 +55,7 @@ namespace UDPMode
             return buf;
         }
 
-        private static void WriteDoubleBE(byte[] buf, int offset, double value) // 255 page Bigendian으로
+        private static void WriteDoubleBE(byte[] buf, int offset, double value) 
         {
             byte[] bytes = BitConverter.GetBytes(value);
             //if (BitConverter.IsLittleEndian) Array.Reverse(bytes);

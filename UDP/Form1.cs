@@ -49,7 +49,7 @@ namespace UDPMode
         private void Form_Load(object sender, EventArgs e)
         {
             _tcp = new SMBVTCP();
-            MakeScrollable();  
+            MakeScrollable();
             InitCombos();
             LoadIni();
             SetControlState(false);
@@ -78,6 +78,13 @@ namespace UDPMode
             grGnssConfig.Enabled = connected;
             grControl.Enabled = connected;
             grStatus.Enabled = connected;
+            
+            btnInitialize.Enabled = connected;
+            btnConfig.Enabled = connected;
+            btnGnssOn.Enabled = connected;
+            btnGnssOff.Enabled = connected;
+            btnRfOn.Enabled = connected;
+            btnRfOff.Enabled = connected;
 
             bool isHil = comboPosition.Text == ModeHIL;
             btnLoadCsv.Enabled = connected && isHil;
@@ -271,7 +278,8 @@ namespace UDPMode
         {
             await _tcp.ResetIni();
             Log("장비 리셋");
-        }  
+
+        }
 
         // ════════════════════════════════════════════
         //             Mode and Location
@@ -396,7 +404,7 @@ namespace UDPMode
             catch (Exception ex) { Log($"RF OFF 실패: {ex.Message}"); }
         }
 
- 
+
         private void btnLoadCsv_Click(object sender, EventArgs e)
         {
             using var dlg = new OpenFileDialog
@@ -463,8 +471,7 @@ namespace UDPMode
             lblHilStatus.ForeColor = Color.FromArgb(230, 81, 0);
 
             long packetCount = 0;
-            //var totalWatch = new Stopwatch();// Latency Calibration의 synchronization과 HWTime, ElapsedTime을 위한
-
+           
             try
             {
 
@@ -498,17 +505,11 @@ namespace UDPMode
                 Log($" UDP 소켓 생성 (바인딩: {_localIp})");
 
                 var endpoint = new IPEndPoint(IPAddress.Parse(_deviceIp), udpPort);
-              
 
-                //HWT
-                double hwTime = await _tcp.GetHwTimeAsync();// L.C 4번 
-                Log($" HWTime = {hwTime:F2}초");
-                if (hwTime <= 0) throw new Exception("HWTime = 0. Initialize를 먼저 실행하세요.");
-                await Task.Delay(1000);
 
                 // UDP 전송
                 packetCount = await Task.Run(()
-                    => UdpHilLoop(px, py, pz, times, n, endpoint, udp, hwTime, _hilCts.Token));
+                    => UdpHilLoop(px, py, pz, times, n, endpoint, udp, _hilCts.Token));
                 Log($" UDP HIL 시작: {n}개 (속도/가속도/저크 포함)");
 
                 // udp close
@@ -556,7 +557,7 @@ namespace UDPMode
                     btnConnect.Text = "연결";
                 }
                 await Task.Delay(1000);
-                await StopHil();
+                //await StopHil();
                 btnHilStart.Enabled = true;
                 btnHilStop.Enabled = false;
             }
@@ -644,17 +645,17 @@ namespace UDPMode
         private long UdpHilLoop(
             double[] px, double[] py, double[] pz,
             double[] times, int n,
-            IPEndPoint endpoint, UdpClient udp, double timeOffset, CancellationToken token)
+            IPEndPoint endpoint, UdpClient udp, CancellationToken token)
         {
             _times = times; // GetDt에서 사용
             long count = 0;
             double elapsed = 0;
-            var loopWatch = new Stopwatch();
-            loopWatch.Start();
+            //var loopWatch = new Stopwatch();
+            //loopWatch.Start();
 
             for (int i = 0; i < n && !token.IsCancellationRequested; i++)
             {
-                loopWatch.Restart();
+                //loopWatch.Restart();
                 double dt = GetDt(i);
 
                 // ── 속도 (X, Y, Z 각각) ──
@@ -698,7 +699,7 @@ namespace UDPMode
                 }
                 // ── ElapsedTime ──
 
-                elapsed = timeOffset + times[i];//
+                elapsed = times[i] ;//timeOffset
 
                 // ── 패킷 빌드 + 전송 ──
                 byte[] packet = HilPacket.Build(
@@ -714,7 +715,6 @@ namespace UDPMode
                 count++;
                 int remaining = n - i - 1;
                 long currentCount = count;
-                long loopMs = loopWatch.ElapsedMilliseconds;
 
                 BeginInvoke(new Action(() =>
                 {
@@ -722,20 +722,14 @@ namespace UDPMode
                     lblHilStatus.Text = $"{remaining} left";
                 }));
 
-                // ── 주기 대기 (secInv:)──
-                if (i < n - 1)
-                {
-                    int elapsedMs = (int)loopWatch.ElapsedMilliseconds;
-                    int intervalMs;
-                    intervalMs = (int)((times[i + 1] - times[i]) * 1000); // 초 → ms 변환!
-                    double delay = intervalMs - elapsedMs;
-                    if (delay > 0)
-                        Thread.Sleep((int)delay);
-                }
-                //else
-                //intervalMs = (int)((times[i] - times[i - 1]) * 1000); // 마지막: 이전 간격 유지
+               
+                int intervalMs=0;
+                if(i<n-1)
+                intervalMs = (int)((times[i + 1] - times[i]) * 1000); // 초 → ms 변환!
+                
+                Thread.Sleep(intervalMs);
             }
-
+                
             _times = null;
             return count;
         }
@@ -913,6 +907,12 @@ namespace UDPMode
                 SaveIni();
             }
             base.OnFormClosing(e);
+        }
+
+        private async void btnCheckpackets_Click(object sender, EventArgs e)
+        {
+            string stats = await _tcp.GetHilLatencyStatsAsync(); // 255page Commands 해석// Latency Calibration
+            Log($" HIL 통계: {stats}");
         }
     }
 }

@@ -41,6 +41,7 @@
             btnGnssOn = new DevExpress.XtraEditors.SimpleButton();
             btnInitialize = new DevExpress.XtraEditors.SimpleButton();
             grControl = new DevExpress.XtraEditors.GroupControl();
+            btnCheckpackets = new DevExpress.XtraEditors.SimpleButton();
             btnConfig = new DevExpress.XtraEditors.SimpleButton();
             btnRfOff = new DevExpress.XtraEditors.SimpleButton();
             btnHilStart = new DevExpress.XtraEditors.SimpleButton();
@@ -240,6 +241,7 @@
             // 
             // grControl
             // 
+            grControl.Controls.Add(btnCheckpackets);
             grControl.Controls.Add(btnConfig);
             grControl.Controls.Add(btnRfOff);
             grControl.Controls.Add(btnHilStart);
@@ -254,6 +256,17 @@
             grControl.Size = new System.Drawing.Size(346, 120);
             grControl.TabIndex = 24;
             grControl.Text = "Control";
+            // 
+            // btnCheckpackets
+            // 
+            btnCheckpackets.Appearance.Font = new System.Drawing.Font("Candara", 9F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, 0);
+            btnCheckpackets.Appearance.Options.UseFont = true;
+            btnCheckpackets.Location = new System.Drawing.Point(178, 1);
+            btnCheckpackets.Name = "btnCheckpackets";
+            btnCheckpackets.Size = new System.Drawing.Size(75, 23);
+            btnCheckpackets.TabIndex = 36;
+            btnCheckpackets.Text = "check";
+            btnCheckpackets.Click += btnCheckpackets_Click;
             // 
             // btnConfig
             // 
@@ -362,7 +375,7 @@
             grStatus.Controls.Add(labelControl1);
             grStatus.Location = new System.Drawing.Point(5, 480);
             grStatus.Name = "grStatus";
-            grStatus.Size = new System.Drawing.Size(166, 117);
+            grStatus.Size = new System.Drawing.Size(193, 117);
             grStatus.TabIndex = 34;
             grStatus.Text = "Status";
             // 
@@ -430,9 +443,9 @@
             grHilMonitor.Controls.Add(labelControl9);
             grHilMonitor.Controls.Add(labelControl6);
             grHilMonitor.Controls.Add(labelControl2);
-            grHilMonitor.Location = new System.Drawing.Point(185, 481);
+            grHilMonitor.Location = new System.Drawing.Point(204, 481);
             grHilMonitor.Name = "grHilMonitor";
-            grHilMonitor.Size = new System.Drawing.Size(166, 116);
+            grHilMonitor.Size = new System.Drawing.Size(147, 116);
             grHilMonitor.TabIndex = 35;
             grHilMonitor.Text = "HIL Monitor";
             // 
@@ -785,6 +798,7 @@
         private DevExpress.XtraEditors.SimpleButton btnSetCurrentDate;
         private DevExpress.XtraEditors.DateTimeOffsetEdit DateEdits;
         private DevExpress.XtraEditors.SimpleButton btnClear;
+        private DevExpress.XtraEditors.SimpleButton btnCheckpackets;
     }
 }
 

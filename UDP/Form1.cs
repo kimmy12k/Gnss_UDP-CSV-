@@ -213,19 +213,19 @@ namespace UDPMode
         // ════════════════════════════════════════════
         private async void btnSetDate_Click(object sender, EventArgs e)
         {
-            if (DateEdits.EditValue == null)
+            if (DTOESetTimes.EditValue == null)
             {
                 XtraMessageBox.Show("날짜를 먼저 선택해주세요.", "알림", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
             try
             {
-                string year = ((DateTimeOffset)DateEdits.EditValue).Year.ToString();
-                string month = ((DateTimeOffset)DateEdits.EditValue).Month.ToString();
-                string day = ((DateTimeOffset)DateEdits.EditValue).Day.ToString();
-                string hour = ((DateTimeOffset)DateEdits.EditValue).Hour.ToString();
-                string minute = ((DateTimeOffset)DateEdits.EditValue).Minute.ToString();
-                string second = ((DateTimeOffset)DateEdits.EditValue).Second.ToString();
+                string year = ((DateTimeOffset)DTOESetTimes.EditValue).Year.ToString();
+                string month = ((DateTimeOffset)DTOESetTimes.EditValue).Month.ToString();
+                string day = ((DateTimeOffset)DTOESetTimes.EditValue).Day.ToString();
+                string hour = ((DateTimeOffset)DTOESetTimes.EditValue).Hour.ToString();
+                string minute = ((DateTimeOffset)DTOESetTimes.EditValue).Minute.ToString();
+                string second = ((DateTimeOffset)DTOESetTimes.EditValue).Second.ToString();
 
                 await _tcp.SetTimeMode();//SMBV100B uses UTC as the base time reference
                 await _tcp.SetDate(year, month, day);
@@ -248,9 +248,9 @@ namespace UDPMode
                 await _tcp.SetCurrentTime();
                 string Dates = await _tcp.GetStartDateAsync();
                 string Times = await _tcp.GetStartTimeAsync();
-                DateEdits.DateTimeOffset = SetTimes(Dates, Times);
-                string LogDates = (DateEdits.DateTimeOffset.Date.ToString()).Substring(0, 10);
-                Log($"Current Date: {LogDates}- {DateEdits.DateTimeOffset.TimeOfDay}");
+                DTOESetTimes.DateTimeOffset = SetTimes(Dates, Times);
+                string LogDates = (DTOESetTimes.DateTimeOffset.Date.ToString()).Substring(0, 10);
+                Log($"Current Date: {LogDates}- {DTOESetTimes.DateTimeOffset.TimeOfDay}");
             }
             catch (Exception ex)
             {

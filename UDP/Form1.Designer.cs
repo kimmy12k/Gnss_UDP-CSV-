@@ -82,7 +82,7 @@
             btnLogClear = new DevExpress.XtraEditors.SimpleButton();
             memoLog = new DevExpress.XtraEditors.MemoEdit();
             grSetTime = new DevExpress.XtraEditors.GroupControl();
-            DateEdits = new DevExpress.XtraEditors.DateTimeOffsetEdit();
+            DTOESetTimes = new DevExpress.XtraEditors.DateTimeOffsetEdit();
             btnSetCurrentDate = new DevExpress.XtraEditors.SimpleButton();
             btnSetDate = new DevExpress.XtraEditors.SimpleButton();
             ((System.ComponentModel.ISupportInitialize)grNetwork).BeginInit();
@@ -110,7 +110,7 @@
             ((System.ComponentModel.ISupportInitialize)memoLog.Properties).BeginInit();
             ((System.ComponentModel.ISupportInitialize)grSetTime).BeginInit();
             grSetTime.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)DateEdits.Properties).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)DTOESetTimes.Properties).BeginInit();
             SuspendLayout();
             // 
             // grNetwork
@@ -650,7 +650,7 @@
             // grSetTime
             // 
             grSetTime.Controls.Add(btnClear);
-            grSetTime.Controls.Add(DateEdits);
+            grSetTime.Controls.Add(DTOESetTimes);
             grSetTime.Controls.Add(btnSetCurrentDate);
             grSetTime.Controls.Add(btnSetDate);
             grSetTime.Location = new System.Drawing.Point(5, 139);
@@ -659,14 +659,14 @@
             grSetTime.TabIndex = 35;
             grSetTime.Text = "Set Time";
             // 
-            // DateEdits
+            // DTOESetTimes
             // 
-            DateEdits.EditValue = null;
-            DateEdits.Location = new System.Drawing.Point(5, 46);
-            DateEdits.Name = "DateEdits";
-            DateEdits.Properties.Buttons.AddRange(new DevExpress.XtraEditors.Controls.EditorButton[] { new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Combo) });
-            DateEdits.Size = new System.Drawing.Size(234, 20);
-            DateEdits.TabIndex = 15;
+            DTOESetTimes.EditValue = null;
+            DTOESetTimes.Location = new System.Drawing.Point(5, 46);
+            DTOESetTimes.Name = "DTOESetTimes";
+            DTOESetTimes.Properties.Buttons.AddRange(new DevExpress.XtraEditors.Controls.EditorButton[] { new DevExpress.XtraEditors.Controls.EditorButton(DevExpress.XtraEditors.Controls.ButtonPredefines.Combo) });
+            DTOESetTimes.Size = new System.Drawing.Size(234, 20);
+            DTOESetTimes.TabIndex = 15;
             // 
             // btnSetCurrentDate
             // 
@@ -735,7 +735,7 @@
             ((System.ComponentModel.ISupportInitialize)memoLog.Properties).EndInit();
             ((System.ComponentModel.ISupportInitialize)grSetTime).EndInit();
             grSetTime.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)DateEdits.Properties).EndInit();
+            ((System.ComponentModel.ISupportInitialize)DTOESetTimes.Properties).EndInit();
             ResumeLayout(false);
 
         }
@@ -796,7 +796,7 @@
         private DevExpress.XtraEditors.GroupControl grSetTime;
         private DevExpress.XtraEditors.SimpleButton btnSetDate;
         private DevExpress.XtraEditors.SimpleButton btnSetCurrentDate;
-        private DevExpress.XtraEditors.DateTimeOffsetEdit DateEdits;
+        private DevExpress.XtraEditors.DateTimeOffsetEdit DTOESetTimes;
         private DevExpress.XtraEditors.SimpleButton btnClear;
         private DevExpress.XtraEditors.SimpleButton btnCheckpackets;
     }

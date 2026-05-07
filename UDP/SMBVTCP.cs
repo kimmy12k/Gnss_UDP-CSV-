@@ -1,6 +1,9 @@
-﻿using DevExpress.DataAccess.Native.Web;
+﻿using DevExpress.CodeParser.Diagnostics;
+using DevExpress.DataAccess.Native.Web;
 using DevExpress.Utils.Html.Internal;
 using DevExpress.XtraEditors;
+using DevExpress.XtraRichEdit.Internal;
+using DevExpress.XtraRichEdit.Mouse;
 using System;
 using System.Globalization;
 using System.IO;
@@ -17,7 +20,7 @@ namespace UDPMode
         private NetworkStream _stream;
         private StreamReader _reader;
         private StreamWriter _writer;
-        private const int COMMAND_DELAY_MS = 100;
+        private const int COMMAND_DELAY_MS = 1000;
 
         public bool IsConnected =>
             _client != null && _client.Connected && _reader != null;
@@ -48,14 +51,30 @@ namespace UDPMode
             await Task.Delay(COMMAND_DELAY_MS);
         }
 
-        public async Task<string> QueryAsync(string command, int timeoutMs=1000)
+        public async Task<string> QueryAsync(string command)
         {
-            
+            if (!IsConnected) throw new InvalidOperationException("장비가 연결되지 않았습니다.");
             await SendAsync(command);
             string response = await _reader.ReadLineAsync();
             return response?.Trim() ?? string.Empty;
         }
- 
+
+        public async Task OPCQUeryAsync(string command, int timeoutMs=3000)
+        {
+            if (!IsConnected) throw new InvalidOperationException("장비가 연결되지 않았습니다.");
+            await SendAsync(command + "; *OPC?");
+
+            var readTask = _reader.ReadLineAsync();
+            var timeoutTask = Task.Delay(timeoutMs);
+
+            var completed = await Task.WhenAny(readTask, timeoutTask);
+            if (completed == timeoutTask)
+            {
+                throw new TimeoutException($"장비 응답 없음({timeoutMs / 1000}초 초과):{command}");
+            }
+            string response = await readTask;
+            
+        }
 
 
 public async Task CheckErrorAsync()
@@ -134,10 +153,14 @@ public async Task CheckErrorAsync()
             await SendAsync(":SOURce1:BB:GNSS:RECeiver:V1:LOCation:COORdinates:FORMat DEC");
             await SendAsync($":SOURce1:BB:GNSS:RECeiver:V1:LOCation:COORdinates:DEC:WGS {lon},{lat},{alt}");
 
-            //await SendAsync(":SOURce1:BB:GNSS:STATe 1");
-            //await Task.Delay(3000);
-            //await CheckErrorAsync();
-            //await SendAsync(":OUTPut1:STATe 1");
+            if (mode != "HIL")
+            {
+                await SendAsync(":SOURce1:BB:GNSS:STATe 1");
+                await Task.Delay(3000);
+                await CheckErrorAsync();
+                await SendAsync(":OUTPut1:STATe 1");  
+            }
+
         }
 
         public async Task ResetIni()

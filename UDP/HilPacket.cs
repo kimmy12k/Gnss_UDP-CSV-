@@ -6,12 +6,6 @@ namespace UDPMode
     {
         public const int PACKET_SIZE = 216;
         private const int RESERVED_SIZE = 16;
-
-        // 전체 25개 double 파라미터 (매뉴얼 p.255 Table 16-2)
-        //
-        // 16B 예약 + 25 × 8B = 216B
-
-        //
         public static byte[] Build(
             double elapsedTime,
             double posX, double posY, double posZ,

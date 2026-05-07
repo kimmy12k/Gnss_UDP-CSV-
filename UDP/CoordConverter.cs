@@ -23,7 +23,5 @@ namespace UDPMode
             y = (N + altM) * cosLat * sinLon;
             z = (N * (1.0 - E2) + altM) * sinLat;
         }
-
-    
     }
 }

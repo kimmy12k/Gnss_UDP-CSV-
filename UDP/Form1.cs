@@ -372,13 +372,13 @@ namespace UDPMode
             if (!IsConnected) return;
             try
             {
-                await _tcp.SendAsync(":SOURce1:BB:GNSS:STATe 0");
+                await _tcp.OPCQUeryAsync(":SOURce1:BB:GNSS:STATe 0");
                 Log("GNSS State → OFF");
 
                 lblGnssState.Text = "OFF";
                 lblGnssState.ForeColor = Color.FromArgb(198, 40, 40);
             }
-            catch (Exception ex) { Log($"GNSS OFF 실패: {ex.Message}"); }
+            catch (TimeoutException ex) { Log($"GNSS OFF 실패: {ex.Message}"); }
         }
 
 
@@ -482,13 +482,12 @@ namespace UDPMode
 
                 // start simulation
                 await _tcp.SendAsync(":SOURce1:BB:GNSS:STATe 1");
-                await Task.Delay(3000);
                 await _tcp.SendAsync(":OUTPut1:STATe 1");
 
 
                 //  &GTL 
                 await _tcp.GoToLocalAsync();// page 245  L.C 5번 Go to Local
-                await Task.Delay(1000);
+
                 //_tcp.Disconnect();
                 //Log(" &GTL → TCP 닫기 완료");
 
@@ -556,8 +555,8 @@ namespace UDPMode
                     btnConnect.Enabled = true;
                     btnConnect.Text = "연결";
                 }
-                await Task.Delay(1000);
                 //await StopHil();
+                //await _tcp.SendOffRadioFreq();
                 btnHilStart.Enabled = true;
                 btnHilStop.Enabled = false;
             }
@@ -633,7 +632,7 @@ namespace UDPMode
         private double GetDt(int i)
         {
             if (i <= 0 || _times == null) return 1.0;// 왜 1.0이지?
-
+            //          현재 시간 - 전 시간
             double dt = _times[i] - _times[i - 1];
             return (dt > 0) ? dt : 1.0;
         }
@@ -650,8 +649,6 @@ namespace UDPMode
             _times = times; // GetDt에서 사용
             long count = 0;
             double elapsed = 0;
-            //var loopWatch = new Stopwatch();
-            //loopWatch.Start();
 
             for (int i = 0; i < n && !token.IsCancellationRequested; i++)
             {
@@ -699,7 +696,7 @@ namespace UDPMode
                 }
                 // ── ElapsedTime ──
 
-                elapsed = times[i] ;//timeOffset
+                elapsed = times[i] ;
 
                 // ── 패킷 빌드 + 전송 ──
                 byte[] packet = HilPacket.Build(
@@ -722,9 +719,8 @@ namespace UDPMode
                     lblHilStatus.Text = $"{remaining} left";
                 }));
 
-               
                 int intervalMs=0;
-                if(i<n-1)
+                if(i<n-1)// csv.count
                 intervalMs = (int)((times[i + 1] - times[i]) * 1000); // 초 → ms 변환!
                 
                 Thread.Sleep(intervalMs);
@@ -751,7 +747,6 @@ namespace UDPMode
         private async Task StopHil()
         {
             await _tcp.SendOffRadioFreq();
-            await Task.Delay(1000);
             await _tcp.SendOffGnssAsync();
             _hilCts?.Cancel();
             _hilCts = null;
